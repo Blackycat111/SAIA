@@ -1,0 +1,24 @@
+embedding_size: 64
+n_ui_layers: 2
+n_layers: 1
+
+learning_rate_scheduler: [0.96, 50]
+lambda_coeff: 0.9
+reg_weight: 1e-04
+knn_k: 10
+NUM_NEG_SAMPLES: 5
+learning_rate: 0.001
+
+
+cl_loss: [0.001]
+item_graph_dict_file: 'item_graph_dict_2.npy'
+
+alpha: 0.5
+lamda: 1.0
+tau: 0.2
+
+
+
+
+
+hyper_parameters: ["cl_loss"]
