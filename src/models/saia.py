@@ -107,8 +107,8 @@ class SAIA(GeneralRecommender):
             nn.Sigmoid()
         )
 
-        self.i_pe = PositionalEncoding(self.embedding_dim, self.n_items, self.device)
-        self.u_pe = PositionalEncoding(self.embedding_dim, self.n_users, self.device)
+        self.i_DPE = DPE(self.embedding_dim, self.n_items, self.device)
+        self.u_DPE = DPE(self.embedding_dim, self.n_users, self.device)
 
         self.tau = 0.5
 
@@ -200,8 +200,8 @@ class SAIA(GeneralRecommender):
         if self.t_feat is not None:
             text_feats = self.text_trs(self.text_embedding.weight)
 
-        item_embeds = self.i_pe(self.item_id_embedding.weight)
-        user_embeds = self.u_pe(self.user_id_embedding.weight)
+        item_embeds = self.i_DPE(self.item_id_embedding.weight)
+        user_embeds = self.u_DPE(self.user_id_embedding.weight)
 
         image_item_embeds = torch.multiply(item_embeds, (self.gate_v(image_feats)))
         text_item_embeds = torch.multiply(item_embeds, (self.gate_t(text_feats)))
@@ -228,7 +228,7 @@ class SAIA(GeneralRecommender):
         ego_embeddings = torch.cat([user_embeds, item_embeds], dim=0)
         all_embeddings = [ego_embeddings]
         for i in range(self.n_ui_layers):
-            # 更新side_embeddings
+            # update side_embeddings
             side_embeddings = torch.sparse.mm(adj, ego_embeddings)
             score_old, score_new = self.GrowthScore(ego_embeddings, side_embeddings)
             ego_embeddings = torch.mul(score_old, ego_embeddings) + torch.mul(score_new, side_embeddings)
@@ -316,10 +316,10 @@ class SAIA(GeneralRecommender):
 
         return scores
 
-class PositionalEncoding(nn.Module):
+class DPE(nn.Module):
     def __init__(self, pos_dim, max_len, device):
 
-        super(PositionalEncoding, self).__init__()
+        super(DPE, self).__init__()
         self.pos_dim = pos_dim
         self.max_len = max_len
         self.device = device
@@ -334,8 +334,6 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x):
 
-        x = x + self.pe
-        return x
         seq_len = x.size(0)
         pe = self.pe[:seq_len]
         noise_std = 0.3
